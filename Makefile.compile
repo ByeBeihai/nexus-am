@@ -1,10 +1,10 @@
 $(shell mkdir -p $(DST_DIR))
 
 OBJS      = $(addprefix $(DST_DIR)/, $(addsuffix .o, $(basename $(SRCS))))
-AS        = $(CROSS_COMPILE)gcc
-CC        = $(CROSS_COMPILE)gcc
-CXX       = $(CROSS_COMPILE)g++
-LD        = $(CROSS_COMPILE)ld
+AS        = /media/stu/diskb/llvm-p/bin/clang
+CC        = /media/stu/diskb/llvm-p/bin/clang
+CXX       = /media/stu/diskb/llvm-p/bin/clang++
+LD        = /media/stu/diskb/llvm-p/bin/ld.lld
 OBJDUMP   = $(CROSS_COMPILE)objdump
 OBJCOPY   = $(CROSS_COMPILE)objcopy
 READELF   = $(CROSS_COMPILE)readelf
