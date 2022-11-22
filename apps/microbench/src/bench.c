@@ -61,7 +61,7 @@ int main(const char *args) {
   const char *setting_name = args;
   if (args == NULL || strcmp(args, "") == 0) {
     printf("Empty mainargs. Use \"ref\" by default\n");
-    setting_name = "ref";
+    setting_name = "train";
   }
   int setting_id = -1;
 
