@@ -3,7 +3,13 @@
 
 本手册基于Ubuntu 20.04环境编写，推荐您使用此版本系统进行环境部署
 ## 一、部署编译器：LLVM
-### 0.为了简化同学们部署llvm的流程，安装完毕的llvm已经被放置在Nexus-AM仓库根目录下的llvm-p文件夹内，如果你对手动编译部署llvm并不感兴趣，可以直接跳转到第二部分进行阅读
+### 0.使用已经编译安装好的llvm
+为了简化同学们部署llvm的流程，我们提供了llvm的免编译安装版压缩包，你可以通过以下链接下载：
+```
+链接: https://pan.baidu.com/s/13pCz92tRSaOw3w1bEFIQSA 
+提取码: llvm 
+```
+如果你对手动编译部署llvm并不感兴趣，在下载完成后就可以直接跳转到第二部分进行阅读
 
 #### 如果llvm编译器后续需要更新，可以参照第一部分的余下内容进行部署。
 
@@ -88,12 +94,22 @@ bash: <path of Nexus-AM>: Is a directory
 ```
 
 ### 3.修改llvm的路径参数
-如果你的llvm是手动编译部署得到的（否则请忽略此步，直接阅读第4点），请进入Nexus-AM所在文件夹，打开Makefile.compile文件，将文件前4-7行修改为如下内容并保存。
+如果你的llvm是手动编译部署得到的，请参照（a）
+
+如果你的llvm是下载压缩包得到的，请参照（b）
+
+（a）进入Nexus-AM所在文件夹，打开Makefile.compile文件，将文件前4-7行修改为如下内容并保存。
 ```
 AS        = <path of llvm install>/bin/clang
 CC        = <path of llvm install>/bin/clang
 CXX       = <path of llvm install>/bin/clang++
 LD        = <path of llvm install>/bin/ld.lld
+```
+（b）将llvm压缩包解压至“path of Nexus-AM”下即可，解压后目录的结构应该如下：
+```
+-nexus-am
+--llvm-p
+--其他文件和文件夹
 ```
 
 ### 4.检查Nexus-AM是否安装正确
