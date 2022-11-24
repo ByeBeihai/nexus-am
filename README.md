@@ -119,9 +119,9 @@ CXX       = <path of llvm install>/bin/clang-15
 ```
 随后打开Makefile.compile文件，将文件前4-6行修改为如下内容并保存。
 ```
-AS        = $(LLVMP_HOME)/bin/clang-15
-CC        = $(LLVMP_HOME)/bin/clang-15
-CXX       = $(LLVMP_HOME)/bin/clang-15
+AS        = $(AM_HOME)/llvm-p/bin/clang-15
+CC        = $(AM_HOME)/llvm-p/bin/clang-15
+CXX       = $(AM_HOME)/llvm-p/bin/clang-15
 ```
 
 ### 4.开启P扩展编译选项
