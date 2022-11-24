@@ -92,27 +92,46 @@ $AM_HOME
 ```shell
 bash: <path of Nexus-AM>: Is a directory
 ```
+### 3.编译基础库
+在命令行中输入以下命令
+```
+cd $AM_HOME
+make ARCH=riscv64-nutshell
+```
+若没有报出error错误，则本步骤通过
 
-### 3.修改llvm的路径参数
+### 4.修改llvm的路径参数
 如果你的llvm是手动编译部署得到的，请参照（a）
 
 如果你的llvm是下载压缩包得到的，请参照（b）
 
-（a）进入Nexus-AM所在文件夹，打开Makefile.compile文件，将文件前4-7行修改为如下内容并保存。
+（a）进入Nexus-AM所在文件夹，打开Makefile.compile文件，将文件前4-6行修改为如下内容并保存。
 ```
-AS        = <path of llvm install>/bin/clang
-CC        = <path of llvm install>/bin/clang
-CXX       = <path of llvm install>/bin/clang++
-LD        = <path of llvm install>/bin/ld.lld
+AS        = <path of llvm install>/bin/clang-15
+CC        = <path of llvm install>/bin/clang-15
+CXX       = <path of llvm install>/bin/clang-15
 ```
-（b）将llvm压缩包解压至“path of Nexus-AM”下即可，解压后目录的结构应该如下：
+（b）首先将llvm压缩包解压至“path of Nexus-AM”下，解压后目录的结构应该如下：
 ```
 -nexus-am
 --llvm-p
 --其他文件和文件夹
 ```
+随后打开Makefile.compile文件，将文件前4-6行修改为如下内容并保存。
+```
+AS        = $(LLVMP_HOME)/bin/clang-15
+CC        = $(LLVMP_HOME)/bin/clang-15
+CXX       = $(LLVMP_HOME)/bin/clang-15
+```
 
-### 4.检查Nexus-AM是否安装正确
+### 4.开启P扩展编译选项
+打开/am/arch/isa/riscv64.mk文件，修改其第二行为：
+```
+COMMON_FLAGS  := -fno-pic -march=rv64gp0p96 -mcmodel=medany  -mno-relax -menable-experimental-extensions
+```
+
+
+### 5.检查Nexus-AM是否安装正确
 在命令行中输入以下命令：
 ```shell
 cd $AM_HOME/apps/pext
