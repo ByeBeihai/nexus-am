@@ -353,7 +353,7 @@ total guest instructions = 8,116
 instrCnt = 8,116, cycleCnt = 16,042, IPC = 0.505922
 Seed=0 Guest cycle spent: 16,044 (this will be different from cycleCnt if emu loads a snapshot)
 Host time spent: 840ms
-以下内容此处省略，可以在第二节第四点中查看。
+以下内容此处省略，可以在第二节第五点中查看。
 ```
 
 ## 关于文档
