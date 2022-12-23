@@ -1,62 +1,63 @@
-# P扩展编程手册 V0.2
+# P扩展编程手册 V0.3
 作者：宗吉祥
 
 本手册基于Ubuntu 20.04环境编写，推荐您使用此版本系统进行环境部署
-## 一、部署编译器：LLVM
-### 0.使用已经编译安装好的llvm
-为了简化同学们部署llvm的流程，我们提供了llvm的免编译安装版压缩包，你可以通过以下链接下载：
+## 一、部署编译器：GCC
+### 0.使用已经编译安装好的gcc
+为了简化同学们部署gcc的流程，我们提供了gcc的免编译安装版压缩包，你可以通过以下链接下载：
 ```
-链接: https://pan.baidu.com/s/13pCz92tRSaOw3w1bEFIQSA 
-提取码: llvm 
+链接: https://pan.baidu.com/s/1mheO_QmSnLvFBKR7gu1omQ 
+提取码: gccp
 ```
-如果你对手动编译部署llvm并不感兴趣，在下载完成后就可以直接跳转到第二部分进行阅读
+如果你对手动编译部署gcc并不感兴趣，在下载完成后就可以直接跳转到第二部分进行阅读
 
-#### 如果llvm编译器后续需要更新，可以参照第一部分的余下内容进行部署。
+#### 如果gcc编译器后续需要更新，可以参照第一部分的余下内容进行部署。
 
-### 1.从github上部署plctlab维护的LLVM项目，并切换至p-extension-andes-v1分支。命令参考如下：
+### 1.从github上部署整合好的p扩展版riscv-toolchain项目（内含gcc等工具的源码）
 ```shell
-git clone https://github.com/plctlab/llvm-project.git
-cd <path of llvm project>
-git checkout p-extension-andes-v1
+git clone https://github.com/ByeBeihai/riscv-toolchain-rvp.git
 
-<path of llvm project>为你选择的llvm项目所在的路径
+<path of gcc project>为你选择的gcc项目所在的路径，建议磁盘空间预留1G
 ```
 
-### 2.编译并安装llvm
-在“path of llvm project”中打开命令行并输入如下命令
+### 2.编译并安装gcc
+在任一路径（建议磁盘空间预留1G）下打开命令行，输入以下命令：
 ```shell
-mkdir build
-cd build
+mkdir rvp-build
+cd rvp-build
 
-cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX=<path of llvm install> -DLLVM_ENABLE_PROJECTS="clang;lld" -DCMAKE_BUILD_TYPE=Release -DLLVM_TARGETS_TO_BUILD="RISCV" -DLLVM_DEFAULT_TARGET_TRIPLE="riscv64-unknown-linux-gnu" ../llvm
+<path of gcc project>/configure --prefix=<path of gcc install> --target=riscv64-unknown-linux --with-arch=rv64imafdcp
 
-make -jn //n为编译调用的线程数，n越大编译越快，但是内存占用也越多，有编译失败的风险。建议内存小于8G的同学直接使用-j1即可。
-make install
+make -linux -jn //n为编译调用的线程数，n越大编译越快，但是内存占用也越多，有编译失败的风险。建议内存小于8G的同学直接使用-j1即可。
 
-<path of llvm install>为你选择的llvm安装的目标路径
+<path of gcc install>为你选择的gcc安装的目标路径，建议磁盘空间预留2G
 ```
 
 ### 3.检查安装是否成功
 执行以下命令
 ```shell
-cd <path of llvm install>
-./bin/clang --version
-./bin/ld.lld --version
+cd <path of gcc install>
+./bin/riscv64-unknown-elf-gcc -v
+./bin/riscv64-unknown-elf-ld -v
 ```
 会得到以下版本信息
 ```shell
-clang version 15.0.0 (https://github.com/plctlab/llvm-project.git bb4bd8ac400633a3e2f4c51a0508ac51cb8c9cf7)
-Target: riscv64-unknown-linux-gnu
-Thread model: posix
-InstalledDir: /media/stu/diskb/llvm-install/./bin
+Using built-in specs.
+COLLECT_GCC=./bin/riscv64-unknown-elf-gcc
+COLLECT_LTO_WRAPPER=/media/stu/diska/rv-tool/install/libexec/gcc/riscv64-unknown-elf/10.2.0/lto-wrapper
+Target: riscv64-unknown-elf
+Configured with: /media/stu/diska/rv-tool/build/../riscv-gnu-toolchain/gcc/configure --target=riscv64-unknown-elf --prefix=/media/stu/diska/rv-tool/install --disable-shared --disable-threads --enable-languages=c,c++ --with-pkgversion=g2ee5e430018-dirty --with-system-zlib --enable-tls --with-newlib --with-sysroot=/media/stu/diska/rv-tool/install/riscv64-unknown-elf --with-native-system-header-dir=/include --disable-libmudflap --disable-libssp --disable-libquadmath --disable-libgomp --disable-nls --disable-tm-clone-registry --src=/media/stu/diska/rv-tool/riscv-gnu-toolchain/gcc --disable-multilib --with-abi=lp64d --with-arch=rv64imafdcp --with-tune=rocket --with-isa-spec=2.2 'CFLAGS_FOR_TARGET=-Os   -mcmodel=medlow' 'CXXFLAGS_FOR_TARGET=-Os   -mcmodel=medlow'
+Thread model: single
+Supported LTO compression algorithms: zlib
+gcc version 10.2.0 (g2ee5e430018-dirty)
 
-LLD 15.0.0 (compatible with GNU linkers)
+GNU ld (GNU Binutils) 2.36.1
 ```
 如果顺利得到了以上的输出结果（安装位置信息可能有不同），那么第一步：部署编译器 就已经完成了。
 
 ## 二、部署裸机运行环境
-#### 直接使用llvm的clang和链接器ld是无法将代码转换为可以运行的程序的。因为你的linux是X86架构，无法运行llvm编译出来的riscv架构程序。另一方面，我们的P扩展CPU也无法直接运行这些程序，这是因为你使用的库函数与CPU的外设以及内存寻址等机制并不兼容。
-#### 因此，我们需要使用一个裸机运行环境为我们的编译提供定制好的库函数和内存映射机制，它将调用我们在第一步中得到的clang和lld，将代码编译为可以在我们的CPU上运行的二进制文件。
+#### 直接使用gcc和链接器ld是无法将代码转换为可以运行的程序的。因为你的linux是X86架构，无法运行gcc编译出来的riscv架构程序。另一方面，我们的P扩展CPU也无法直接运行这些程序，这是因为你使用的库函数与CPU的外设以及内存寻址等机制并不兼容。
+#### 因此，我们需要使用一个裸机运行环境为我们的编译提供定制好的库函数和内存映射机制，它将调用我们在第一步中得到的gcc和ld，将代码编译为可以在我们的CPU上运行的二进制文件。
 ### 这个裸机运行环境就是：Nexus-AM
 ### 1. 从github上部署为P扩展定制的 Nexus-AM
 运行以下命令：
@@ -65,7 +66,7 @@ git clone https://github.com/ByeBeihai/nexus-am.git
 
 记你部署的Nexus-AM的路径为<path of Nexus-AM>
 ```
-Nexus-AM原本使用的是GNU作为工具链，我们需要使用GCC对Nexus-AM的基础库做编译，这里使用apt命令安装默认的GNU工具链
+Nexus-AM原本使用的是riscv64-linux-gnu作为工具链,为规避可能出现的报错，需要执行如下命令安装gcc-riscv64-linux-gnu
 ```shell
 sudo apt install gcc-riscv64-linux-gnu
 ```
@@ -100,36 +101,33 @@ make ARCH=riscv64-nutshell
 ```
 若没有报出error错误，则本步骤通过
 
-### 4.修改llvm的路径参数
-如果你的llvm是手动编译部署得到的，请参照（a）
+### 4.修改gcc的路径参数
+如果你的gcc是手动编译部署得到的，请参照（a）
 
-如果你的llvm是下载压缩包得到的，请参照（b）
+如果你的gcc是下载压缩包得到的，请参照（b）
 
-（a）进入Nexus-AM所在文件夹，打开Makefile.compile文件，将文件前4-6行修改为如下内容并保存。
+（a）进入Nexus-AM所在文件夹，打开Makefile.compile文件，将文件前4-10行修改为如下内容并保存。
 ```
-AS        = <path of llvm install>/bin/clang-15
-CC        = <path of llvm install>/bin/clang-15
-CXX       = <path of llvm install>/bin/clang-15
+AS        = <path of gcc install>/gcc/bin/riscv64-unknown-elf-gcc
+CC        = <path of gcc install>/gcc/bin/riscv64-unknown-elf-gcc
+CXX       = <path of gcc install>/gcc/bin/riscv64-unknown-elf-gcc
+LD        = <path of gcc install>/gcc/bin/riscv64-unknown-elf-ld
+OBJDUMP   = <path of gcc install>/gcc/bin/riscv64-unknown-elf-objdump
+OBJCOPY   = <path of gcc install>/gcc/bin/riscv64-unknown-elf-objcopy
+READELF   = <path of gcc install>/gcc/bin/riscv64-unknown-elf-readelf
 ```
-（b）首先将llvm压缩包解压至“path of Nexus-AM”下，解压后目录的结构应该如下：
+（b）将gcc压缩包解压至“path of Nexus-AM”下，解压后目录的结构应该如下：
 ```
 -nexus-am
---llvm-p
+--gcc
 --其他文件和文件夹
-```
-随后打开Makefile.compile文件，将文件前4-6行修改为如下内容并保存。
-```
-AS        = $(LLVMP_HOME)/bin/clang-15
-CC        = $(LLVMP_HOME)/bin/clang-15
-CXX       = $(LLVMP_HOME)/bin/clang-15
 ```
 
 ### 4.开启P扩展编译选项
 打开/am/arch/isa/riscv64.mk文件，修改其第二行为：
 ```
-COMMON_FLAGS  := -fno-pic -march=rv64gp0p96 -mcmodel=medany  -mno-relax -menable-experimental-extensions
+COMMON_FLAGS  := -fno-pic -march=rv64gp -mcmodel=medany  -mno-relax -flax-vector-conversions
 ```
-
 
 ### 5.检查Nexus-AM是否安装正确
 在命令行中输入以下命令：
@@ -160,8 +158,8 @@ sudo apt-get install git curl libsdl2-mixer-2.0-0 libsdl2-image-2.0-0 libsdl2-2.
 ```
 若得到以下输出（时间、路径等信息可能不同），则程序执行无误：
 ```shell
-Emu compiled at Nov 22 2022, 11:46:16
-The image is /home/stu/nexus-am/apps/pext/build/pext-riscv64-nutshell.bin
+Emu compiled at Dec 23 2022, 09:06:29
+The image is ./ready-to-run/pext-riscv64-nutshell.bin
 Using simulated 8192MB RAM
 Using simulated 32768B flash
 [warning]no valid flash bin path, use preset flash instead
@@ -169,55 +167,55 @@ src00 1 src10 2 src20 3 res30 4
 src01 5 res11 6 res21 7 res31 8
 res0  6 res1  8 res2 10 res3 12
 P-EXT ADD16 PASS!!!
-Core 0: HIT GOOD TRAP at pc = 0x800000f0
-total guest instructions = 8,116
-instrCnt = 8,116, cycleCnt = 16,042, IPC = 0.505922
-Seed=0 Guest cycle spent: 16,044 (this will be different from cycleCnt if emu loads a snapshot)
-Host time spent: 840ms
+Core 0: HIT GOOD TRAP at pc = 0x800000b0
+total guest instructions = 7,132
+instrCnt = 7,132, cycleCnt = 13,348, IPC = 0.534312
+Seed=0 Guest cycle spent: 13,350 (this will be different from cycleCnt if emu loads a snapshot)
+Host time spent: 668ms
 ======== PerfCnt =========
-               16042 <- Mcycle
-                8116 <- Minstret
-                5551 <- MultiCommit
-                2425 <- MimemStall
+               13348 <- Mcycle
+                7132 <- Minstret
+                4980 <- MultiCommit
+                1877 <- MimemStall
                    0 <- MaluInstr
                    0 <- MbruInstr
                    0 <- MlsuInstr
                    0 <- MmduInstr
                    0 <- McsrInstr
-                1528 <- MloadInstr
-                 245 <- MmmioInstr
+                1263 <- MloadInstr
+                 241 <- MmmioInstr
                    0 <- MicacheHit
                    0 <- MdcacheHit
                    0 <- MmulInstr
-                 385 <- MifuFlush
-                1247 <- MbpBRight
-                  93 <- MbpBWrong
-                 374 <- MbpJRight
-                 137 <- MbpJWrong
-                  72 <- MbpIRight
-                  58 <- MbpIWrong
-                 242 <- MbpRRight
-                 281 <- MbpRWrong
+                 298 <- MifuFlush
+                1239 <- MbpBRight
+                  83 <- MbpBWrong
+                 436 <- MbpJRight
+                  60 <- MbpJWrong
+                  81 <- MbpIRight
+                  47 <- MbpIWrong
+                 383 <- MbpRRight
+                 471 <- MbpRWrong
                    0 <- Ml2cacheHit
-                1365 <- MultiCommit2
-                 600 <- MultiCommit3
-                   0 <- MultiCommit4
+                1405 <- MultiCommit2
+                 315 <- MultiCommit3
+                  39 <- MultiCommit4
                    0 <- CsrOps
                    0 <- MultiCommit5
                    0 <- MultiCommit6
-                   0 <- Custom7
-                   0 <- Custom8
+                   0 <- csrnotalone
+                   0 <- mounotalone
                    0 <- MrawStall
                    0 <- MexuBusy
-                3644 <- MloadStall
-                3162 <- MstoreStall
+                3051 <- MloadStall
+                2618 <- MstoreStall
                    0 <- ISUIssue
 ======== PerfCntCSV =========
 
-Mcycle, Minstret, MultiCommit, MimemStall, MaluInstr, MbruInstr, MlsuInstr, MmduInstr, McsrInstr, MloadInstr, MmmioInstr, MicacheHit, MdcacheHit, MmulInstr, MifuFlush, MbpBRight, MbpBWrong, MbpJRight, MbpJWrong, MbpIRight, MbpIWrong, MbpRRight, MbpRWrong, Ml2cacheHit, MultiCommit2, MultiCommit3, MultiCommit4, CsrOps, MultiCommit5, MultiCommit6, Custom7, Custom8, MrawStall, MexuBusy, MloadStall, MstoreStall, ISUIssue, 
+Mcycle, Minstret, MultiCommit, MimemStall, MaluInstr, MbruInstr, MlsuInstr, MmduInstr, McsrInstr, MloadInstr, MmmioInstr, MicacheHit, MdcacheHit, MmulInstr, MifuFlush, MbpBRight, MbpBWrong, MbpJRight, MbpJWrong, MbpIRight, MbpIWrong, MbpRRight, MbpRWrong, Ml2cacheHit, MultiCommit2, MultiCommit3, MultiCommit4, CsrOps, MultiCommit5, MultiCommit6, csrnotalone, mounotalone, MrawStall, MexuBusy, MloadStall, MstoreStall, ISUIssue, 
 
 
-               16042,                 8116,                 5551,                 2425,                    0,                    0,                    0,                    0,                    0,                 1528,                  245,                    0,                    0,                    0,                  385,                 1247,                   93,                  374,                  137,                   72,                   58,                  242,                  281,                    0,                 1365,                  600,                    0,                    0,                    0,                    0,                    0,                    0,                    0,                    0,                 3644,                 3162,                    0, 
+               13348,                 7132,                 4980,                 1877,                    0,                    0,                    0,                    0,                    0,                 1263,                  241,                    0,                    0,                    0,                  298,                 1239,                   83,                  436,                   60,                   81,                   47,                  383,                  471,                    0,                 1405,                  315,                   39,                    0,                    0,                    0,                    0,                    0,                    0,                    0,                 3051,                 2618,                    0, 
 ```
 
 ## 三、编写你的P扩展程序并运行它
@@ -243,76 +241,67 @@ include $(AM_HOME)/Makefile.app
 例如你可以编写如下的程序：
 ```C
 #include <klib.h>
-typedef struct uint16x4
-{
-   uint16_t src0;
-   uint16_t src1;
-   uint16_t src2;
-   uint16_t src3;
-} uint16x4_t;
+#include <rvp_intrinsic.h>
 int main() {
 
     uint16x4_t a = {1,2,3,4};
     uint16x4_t b = {5,6,7,8};
-    unsigned long long c = __rv_add16(*(unsigned long long *)(&a),*(unsigned long long *)(&b));
-    printf("src00 %d src10 %d src20 %d res30 %d\n",
-            a.src0,  a.src1,  a.src2,  a.src3);
-    printf("src01 %d res11 %d res21 %d res31 %d\n",
-            b.src0,  b.src1,  b.src2,  b.src3);
-    printf("res0  %d res1  %d res2 %d res3 %d\n",
-           ((uint16x4_t*)(&c))->src0,((uint16x4_t*)(&c))->src1,
-           ((uint16x4_t*)(&c))->src2,((uint16x4_t*)(&c))->src3);
+    uint16x4_t c = __rv_v_uadd16(a,b);
+    printf("src00 %d src10 %d src20 %d res30 %d\n",a[0],a[1],a[2],a[3]);
+    printf("src01 %d res11 %d res21 %d res31 %d\n",b[0],b[1],b[2],b[3]);
+    printf("res0  %d res1  %d res2 %d res3 %d\n"  ,c[0],c[1],c[2],c[3]);
     printf("P-EXT ADD16 PASS!!!\n");
 }
 ```
 klib.h为Nexus-AM为你准备的标准库之一，内含printf等你熟悉的函数，它们被重新编写为可以在我们的CPU上正常运行的形式。
 
-如你所见，__rv_add16函数被我们调用以使用P扩展中的add16指令来加速我们的计算。
+rvp_intrinsic.h为你提供了函数式调用p扩展指令的各个函数以及相应的数据类型，它位于gcc目录下的/lib/gcc/riscv64-unknown-elf/10.2.0路径内，你可以自行查阅可用的函数和数据类型。
 
-类似__rv_add16的函数你可以在P扩展手册中每条指令的详情里找到，例如sub8指令的详情中有如下内容：
+如你所见，__rv_v_uadd16函数被我们调用以使用P扩展中的add16指令来加速我们的计算。
+
+类似__rv_v_uadd16的函数你可以在P扩展手册中每条指令的详情里找到，例如sub8指令的详情中有如下内容：
 ```
 Intrinsic functions:
 
 Required:
 
 uintXLEN_t __rv_sub8(uintXLEN_t a, uintXLEN_t b);
-```
-你可以使用__rv_sub8函数来调用sub8指令进行计算。
 
+Optional (e.g., GCC vector extensions):
+
+RV64:
+uint8x8_t __rv_v_usub8(uint8x8_t a, uint8x8_t b);
+int8x8_t __rv_v_ssub8(int8x8_t a, int8x8_t b);
+```
 P扩展手册的地址为：
 ```
 https://github.com/riscv/riscv-p-spec/blob/master/P-ext-proposal.adoc
 ```
+你可以使用__rv_sub8函数或者__rv_v_ssub8或者__rv_v_usub8来调用sub8类的指令进行计算(当然，他们对应的数据类型，诸如有符号无符号等，是不一样的)。__rv_v开头的函数支持以vector的形式传参，这在编程时会比手动操作大位宽数更为方便，笔者建议您使用此类函数进行编程。
 
-LLVM目前不支持uintXLEN_t这样的P扩展变量类型，请使用uint64_t（unsigned long long）这样的等效类型去代替它。
+为了方便我们单独操作vector形式的函数，gcc在rvp_intrinsic.h中为我们定义了如下的众多向量结构
+```C
+typedef signed char int8x4_t __attribute ((vector_size(4)));
+typedef signed char int8x8_t __attribute ((vector_size(8)));
+typedef short int16x2_t __attribute ((vector_size(4)));
+typedef short int16x4_t __attribute__((vector_size (8)));
+typedef int int32x2_t __attribute__((vector_size(8)));
+typedef unsigned char uint8x4_t __attribute__ ((vector_size (4)));
+typedef unsigned char uint8x8_t __attribute__ ((vector_size (8)));
+typedef unsigned short uint16x2_t __attribute__ ((vector_size (4)));
+typedef unsigned short uint16x4_t __attribute__((vector_size (8)));
+typedef unsigned int uint32x2_t __attribute__((vector_size(8)));
+```
+举例来说，uint16x4_t在物理上占据的长度就是64位，其内容为4个16位无符号数，由此以来，你可以使用该结构体类型对需要并行运算的数据进行装载（或者是取出）。
+```C
+printf("res0  %d res1  %d res2 %d res3 %d\n"  ,c[0],c[1],c[2],c[3]);
+```
+目前来说，你可以忘掉诸如“数据类型”或者“向量结构”这样略带陌生的词汇，将它们看作你熟悉的数组去处理（初始化，赋值等等）
+```
+uint16x4_t a = {1,2,3,4};
+a[0] = 114;
+```
 
-为了方便我们单独操作每个16位数，在程序开头我们定义了如下的结构体
-```C
-typedef struct uint16x4
-{  uint16_t src0;
-   uint16_t src1;
-   uint16_t src2;
-   uint16_t src3;
-} uint16x4_t;
-```
-uint16x4_t在物理上占据的长度就是64位，其内容为4个16位数，由此以来，你可以使用该结构体类型对需要并行运算的数据进行装载（或者是取出），例如在上述程序的打印部分，我们将整型转换为uint16x4_t来取出add16指令的四个运算结果。当然，你也可以使用移位运算符来获得每个结果。
-```C
-printf("res0  %d res1  %d res2 %d res3 %d\n",((uint16x4_t*)(&c))->src0,((uint16x4_t*)(&c))->src1,
-                                             ((uint16x4_t*)(&c))->src2,((uint16x4_t*)(&c))->src3);
-```
-类似的，如果我们想方便地操作sub8指令的8对操作数（在64位环境下），我们可以自行定义这样的结构体：
-```C
-typedef struct uint8x8
-{  uint8_t src0;
-   uint8_t src1;
-   uint8_t src2;
-   uint8_t src3;
-   uint8_t src4;
-   uint8_t src5;
-   uint8_t src6;
-   uint8_t src7;
-} uint8x8_t;
-```
 P扩展还支持32位的操作数和64位的操作数，支持加、减、乘、移位、乘加、乘减、交叉乘加减等多种并行运算，详情可见上文已给出地址的P扩展官方手册。
 ### 4.编译并运行
 在编写完程序之后，请回到项目的根目录下（如本例中的myprj），执行如下命令：
@@ -333,8 +322,8 @@ $AM_HOME/emu -b 0 -e 0 -i $AM_HOME/apps/myprj/build/myprj-riscv64-nutshell.bin -
 
 你会得到类似于第二节中第四点的结果，第一部分为emu运行的log，如下：
 ```
-Emu compiled at Nov 22 2022, 11:46:16
-The image is /home/stu/nexus-am/apps/pext/build/pext-riscv64-nutshell.bin
+Emu compiled at Dec 23 2022, 09:06:29
+The image is ./ready-to-run/pext-riscv64-nutshell.bin
 Using simulated 8192MB RAM
 Using simulated 32768B flash
 [warning]no valid flash bin path, use preset flash instead
@@ -348,11 +337,12 @@ P-EXT ADD16 PASS!!!
 ```
 第三部分为CPU的性能统计数据，如果你有兴趣，可以看一看
 ```
-Core 0: HIT GOOD TRAP at pc = 0x800000f0
-total guest instructions = 8,116
-instrCnt = 8,116, cycleCnt = 16,042, IPC = 0.505922
-Seed=0 Guest cycle spent: 16,044 (this will be different from cycleCnt if emu loads a snapshot)
-Host time spent: 840ms
+Core 0: HIT GOOD TRAP at pc = 0x800000b0
+total guest instructions = 7,132
+instrCnt = 7,132, cycleCnt = 13,348, IPC = 0.534312
+Seed=0 Guest cycle spent: 13,350 (this will be different from cycleCnt if emu loads a snapshot)
+Host time spent: 668ms
+======== PerfCnt =========
 以下内容此处省略，可以在第二节第四点中查看。
 ```
 
@@ -372,4 +362,10 @@ V0.2
 更新了P扩展CPU模拟程序、程序示例
 增加了P扩展结构体示例
 更新了仓库内容，将手册作为仓库的README
+
+v0.3
+使用gcc替换llvm
+得益于编译器的替换，用户现在可以对乘法类型指令进行函数式编程
+得益于编译器的替换，用户现在无需自行定义复杂的结构体
+简化了环境的部署流程
 ```
