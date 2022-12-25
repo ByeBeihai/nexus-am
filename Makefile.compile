@@ -1,13 +1,13 @@
 $(shell mkdir -p $(DST_DIR))
 
 OBJS      = $(addprefix $(DST_DIR)/, $(addsuffix .o, $(basename $(SRCS))))
-AS        = $(AM_HOME)/gcc/bin/riscv64-unknown-elf-gcc
-CC        = $(AM_HOME)/gcc/bin/riscv64-unknown-elf-gcc
-CXX       = $(AM_HOME)/gcc/bin/riscv64-unknown-elf-gcc
-LD        = $(AM_HOME)/gcc/bin/riscv64-unknown-elf-ld
-OBJDUMP   = $(AM_HOME)/gcc/bin/riscv64-unknown-elf-objdump
-OBJCOPY   = $(AM_HOME)/gcc/bin/riscv64-unknown-elf-objcopy
-READELF   = $(AM_HOME)/gcc/bin/riscv64-unknown-elf-readelf
+AS        = riscv64-linux-gnu-gcc
+CC        = riscv64-linux-gnu-gcc
+CXX       = riscv64-linux-gnu-g++
+LD        = riscv64-linux-gnu-ld
+OBJDUMP   = riscv64-linux-gnu-objdump
+OBJCOPY   = riscv64-linux-gnu-objcopy
+READELF   = riscv64-linux-gnu-readelf
 INCLUDES += $(addprefix -I, $(INC_DIR)) -I$(AM_HOME)/am/
 INCLUDES += -I$(AM_HOME)/am/include
 CFLAGS   += -O2 -MMD -Wall -Werror -ggdb $(INCLUDES) \

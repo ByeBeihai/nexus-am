@@ -122,6 +122,17 @@ READELF   = <path of gcc install>/gcc/bin/riscv64-unknown-elf-readelf
 --gcc
 --其他文件和文件夹
 ```
+然后打开Makefile.compile文件，将文件前4-10行修改为如下内容并保存。
+```
+AS        = $(AM_HOME)/gcc/bin/riscv64-unknown-elf-gcc
+CC        = $(AM_HOME)/gcc/bin/riscv64-unknown-elf-gcc
+CXX       = $(AM_HOME)/gcc/bin/riscv64-unknown-elf-gcc
+LD        = $(AM_HOME)/gcc/bin/riscv64-unknown-elf-ld
+OBJDUMP   = $(AM_HOME)/gcc/bin/riscv64-unknown-elf-objdump
+OBJCOPY   = $(AM_HOME)/gcc/bin/riscv64-unknown-elf-objcopy
+READELF   = $(AM_HOME)/gcc/bin/riscv64-unknown-elf-readelf
+```
+
 
 ### 4.开启P扩展编译选项
 打开/am/arch/isa/riscv64.mk文件，修改其第二行为：
