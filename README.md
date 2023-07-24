@@ -6,8 +6,8 @@
 ### 0.使用已经编译安装好的gcc
 为了简化同学们部署gcc的流程，我们提供了gcc的免编译安装版压缩包，你可以通过以下链接下载：
 ```
-链接: https://pan.baidu.com/s/1mheO_QmSnLvFBKR7gu1omQ 
-提取码: gccp
+链接: https://pan.baidu.com/s/10qhtXk5bn2AQF-8MKeMvnQ
+提取码: PEXT
 ```
 如果你对手动编译部署gcc并不感兴趣，在下载完成后就可以直接跳转到第二部分进行阅读
 
