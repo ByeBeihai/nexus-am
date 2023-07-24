@@ -1,22 +1,23 @@
 $(shell mkdir -p $(DST_DIR))
 
 OBJS      = $(addprefix $(DST_DIR)/, $(addsuffix .o, $(basename $(SRCS))))
-AS        = riscv64-linux-gnu-gcc
-CC        = riscv64-linux-gnu-gcc
-CXX       = riscv64-linux-gnu-g++
-LD        = riscv64-linux-gnu-ld
-OBJDUMP   = riscv64-linux-gnu-objdump
-OBJCOPY   = riscv64-linux-gnu-objcopy
-READELF   = riscv64-linux-gnu-readelf
+AS        = $(AM_HOME)/gcc/bin/riscv64-unknown-linux-gnu-gcc
+CC        = $(AM_HOME)/gcc/bin/riscv64-unknown-linux-gnu-gcc
+CXX       = $(AM_HOME)/gcc/bin/riscv64-unknown-linux-gnu-g++
+LD        = $(AM_HOME)/gcc/bin/riscv64-unknown-linux-gnu-ld
+OBJDUMP   = $(AM_HOME)/gcc/bin/riscv64-unknown-linux-gnu-objdump
+OBJCOPY   = $(AM_HOME)/gcc/bin/riscv64-unknown-linux-gnu-objcopy
+READELF   = $(AM_HOME)/gcc/bin/riscv64-unknown-linux-gnu-readelf
 INCLUDES += $(addprefix -I, $(INC_DIR)) -I$(AM_HOME)/am/
 INCLUDES += -I$(AM_HOME)/am/include
-CFLAGS   += -O2 -MMD -Wall -Werror -ggdb $(INCLUDES) \
+CFLAGS   += -O3 -MMD -Wall -Werror -ggdb $(INCLUDES) \
             -D__ISA__=\"$(ISA)\" -D__ISA_$(shell echo $(ISA) | tr a-z A-Z)__ \
             -D__PLATFORM__=\"$(PLATFORM)\" -D__PLATFORM_$(shell echo $(PLATFORM) | tr a-z A-Z)__ \
             -D__ARCH__=$(ARCH) -D__ARCH_$(shell echo $(ARCH) | tr a-z A-Z | tr - _) \
             -DARCH_H=\"arch/$(ARCH).h\" \
             -fno-asynchronous-unwind-tables -fno-builtin -fno-stack-protector \
-			-Wno-main
+			-Wno-main 
+
 CXXFLAGS +=  $(CFLAGS) -ffreestanding -fno-rtti -fno-exceptions
 ASFLAGS  += -MMD $(INCLUDES)
 

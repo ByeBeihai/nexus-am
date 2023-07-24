@@ -1,6 +1,6 @@
 #include "klib.h"
 
-#if !defined(__ISA_NATIVE__) && !defined(__PLATFORM_NATIVE__)
+#ifndef __ISA_NATIVE__
 
 void __dso_handle() {
 }

@@ -26,9 +26,9 @@ git clone https://github.com/ByeBeihai/riscv-toolchain-rvp.git
 mkdir rvp-build
 cd rvp-build
 
-<path of gcc project>/configure --prefix=<path of gcc install> --target=riscv64-unknown-linux --with-arch=rv64imafdcp
+<path of gcc project>/configure --prefix=<path of gcc install> --target=riscv64-unknown-linux --with-arch=rv64imacp --with-abi=lp64
 
-make -linux -jn //n为编译调用的线程数，n越大编译越快，但是内存占用也越多，有编译失败的风险。建议内存小于8G的同学直接使用-j1即可。
+make linux -jn //n为编译调用的线程数，n越大编译越快，但是内存占用也越多，有编译失败的风险。建议内存小于8G的同学直接使用-j1即可。
 
 <path of gcc install>为你选择的gcc安装的目标路径，建议磁盘空间预留2G
 ```
@@ -37,16 +37,16 @@ make -linux -jn //n为编译调用的线程数，n越大编译越快，但是内
 执行以下命令
 ```shell
 cd <path of gcc install>
-./bin/riscv64-unknown-elf-gcc -v
-./bin/riscv64-unknown-elf-ld -v
+./bin/riscv64-unknown-linux-gcc -v
+./bin/riscv64-unknown-linux-ld -v
 ```
 会得到以下版本信息
 ```shell
 Using built-in specs.
-COLLECT_GCC=./bin/riscv64-unknown-elf-gcc
-COLLECT_LTO_WRAPPER=/media/stu/diska/rv-tool/install/libexec/gcc/riscv64-unknown-elf/10.2.0/lto-wrapper
-Target: riscv64-unknown-elf
-Configured with: /media/stu/diska/rv-tool/build/../riscv-gnu-toolchain/gcc/configure --target=riscv64-unknown-elf --prefix=/media/stu/diska/rv-tool/install --disable-shared --disable-threads --enable-languages=c,c++ --with-pkgversion=g2ee5e430018-dirty --with-system-zlib --enable-tls --with-newlib --with-sysroot=/media/stu/diska/rv-tool/install/riscv64-unknown-elf --with-native-system-header-dir=/include --disable-libmudflap --disable-libssp --disable-libquadmath --disable-libgomp --disable-nls --disable-tm-clone-registry --src=/media/stu/diska/rv-tool/riscv-gnu-toolchain/gcc --disable-multilib --with-abi=lp64d --with-arch=rv64imafdcp --with-tune=rocket --with-isa-spec=2.2 'CFLAGS_FOR_TARGET=-Os   -mcmodel=medlow' 'CXXFLAGS_FOR_TARGET=-Os   -mcmodel=medlow'
+COLLECT_GCC=./bin/riscv64-unknown-linux-gcc
+COLLECT_LTO_WRAPPER=/media/stu/diska/rv-tool/install/libexec/gcc/riscv64-unknown-linux/10.2.0/lto-wrapper
+Target: riscv64-unknown-linux
+Configured with: /media/stu/diska/rv-tool/build/../riscv-gnu-toolchain/gcc/configure --target=riscv64-unknown-linux --prefix=/media/stu/diska/rv-tool/install --disable-shared --disable-threads --enable-languages=c,c++ --with-pkgversion=g2ee5e430018-dirty --with-system-zlib --enable-tls --with-newlib --with-sysroot=/media/stu/diska/rv-tool/install/riscv64-unknown-linux --with-native-system-header-dir=/include --disable-libmudflap --disable-libssp --disable-libquadmath --disable-libgomp --disable-nls --disable-tm-clone-registry --src=/media/stu/diska/rv-tool/riscv-gnu-toolchain/gcc --disable-multilib --with-abi=lp64 --with-arch=rv64imacp --with-tune=rocket --with-isa-spec=2.2 'CFLAGS_FOR_TARGET=-Os   -mcmodel=medlow' 'CXXFLAGS_FOR_TARGET=-Os   -mcmodel=medlow'
 Thread model: single
 Supported LTO compression algorithms: zlib
 gcc version 10.2.0 (g2ee5e430018-dirty)
@@ -93,29 +93,27 @@ $AM_HOME
 ```shell
 bash: <path of Nexus-AM>: Is a directory
 ```
-### 3.编译基础库
-在命令行中输入以下命令
-```
-cd $AM_HOME
-make ARCH=riscv64-nutshell
-```
-若没有报出error错误，则本步骤通过
 
-### 4.修改gcc的路径参数
+### 3.修改gcc的路径参数
 如果你的gcc是手动编译部署得到的，请参照（a）
 
 如果你的gcc是下载压缩包得到的，请参照（b）
 
 （a）进入Nexus-AM所在文件夹，打开Makefile.compile文件，将文件前4-10行修改为如下内容并保存。
 ```
-AS        = <path of gcc install>/gcc/bin/riscv64-unknown-elf-gcc
-CC        = <path of gcc install>/gcc/bin/riscv64-unknown-elf-gcc
-CXX       = <path of gcc install>/gcc/bin/riscv64-unknown-elf-gcc
-LD        = <path of gcc install>/gcc/bin/riscv64-unknown-elf-ld
-OBJDUMP   = <path of gcc install>/gcc/bin/riscv64-unknown-elf-objdump
-OBJCOPY   = <path of gcc install>/gcc/bin/riscv64-unknown-elf-objcopy
-READELF   = <path of gcc install>/gcc/bin/riscv64-unknown-elf-readelf
+AS        = <path of gcc install>/bin/riscv64-unknown-linux-gcc
+CC        = <path of gcc install>/bin/riscv64-unknown-linux-gcc
+CXX       = <path of gcc install>/bin/riscv64-unknown-linux-gcc
+LD        = <path of gcc install>/bin/riscv64-unknown-linux-ld
+OBJDUMP   = <path of gcc install>/bin/riscv64-unknown-linux-objdump
+OBJCOPY   = <path of gcc install>/bin/riscv64-unknown-linux-objcopy
+READELF   = <path of gcc install>/bin/riscv64-unknown-linux-readelf
 ```
+随后进入am/arch/riscv64-nutshell.mk文件，将第23行的内容改为
+```
+SEARCH_DIR :=<path of gcc install>/lib/gcc/riscv64-unknown-linux-gnu/10.2.0
+```
+
 （b）将gcc压缩包解压至“path of Nexus-AM”下，解压后目录的结构应该如下：
 ```
 -nexus-am
@@ -124,20 +122,23 @@ READELF   = <path of gcc install>/gcc/bin/riscv64-unknown-elf-readelf
 ```
 然后打开Makefile.compile文件，将文件前4-10行修改为如下内容并保存。
 ```
-AS        = $(AM_HOME)/gcc/bin/riscv64-unknown-elf-gcc
-CC        = $(AM_HOME)/gcc/bin/riscv64-unknown-elf-gcc
-CXX       = $(AM_HOME)/gcc/bin/riscv64-unknown-elf-gcc
-LD        = $(AM_HOME)/gcc/bin/riscv64-unknown-elf-ld
-OBJDUMP   = $(AM_HOME)/gcc/bin/riscv64-unknown-elf-objdump
-OBJCOPY   = $(AM_HOME)/gcc/bin/riscv64-unknown-elf-objcopy
-READELF   = $(AM_HOME)/gcc/bin/riscv64-unknown-elf-readelf
+AS        = $(AM_HOME)/gcc/bin/riscv64-unknown-linux-gcc
+CC        = $(AM_HOME)/gcc/bin/riscv64-unknown-linux-gcc
+CXX       = $(AM_HOME)/gcc/bin/riscv64-unknown-linux-gcc
+LD        = $(AM_HOME)/gcc/bin/riscv64-unknown-linux-ld
+OBJDUMP   = $(AM_HOME)/gcc/bin/riscv64-unknown-linux-objdump
+OBJCOPY   = $(AM_HOME)/gcc/bin/riscv64-unknown-linux-objcopy
+READELF   = $(AM_HOME)/gcc/bin/riscv64-unknown-linux-readelf
 ```
-
+随后进入am/arch/riscv64-nutshell.mk文件，将第23行的内容改为
+```
+SEARCH_DIR :=$(AM_HOME)/gcc/lib/gcc/riscv64-unknown-linux-gnu/10.2.0
+```
 
 ### 4.开启P扩展编译选项
 打开/am/arch/isa/riscv64.mk文件，修改其第二行为：
 ```
-COMMON_FLAGS  := -fno-pic -march=rv64gp -mcmodel=medany  -mno-relax -flax-vector-conversions
+COMMON_FLAGS  := -fno-pic -march=rv64imacp -mcmodel=medany  -mno-relax -flax-vector-conversions
 ```
 
 ### 5.检查Nexus-AM是否安装正确
@@ -266,7 +267,7 @@ int main() {
 ```
 klib.h为Nexus-AM为你准备的标准库之一，内含printf等你熟悉的函数，它们被重新编写为可以在我们的CPU上正常运行的形式。
 
-rvp_intrinsic.h为你提供了函数式调用p扩展指令的各个函数以及相应的数据类型，它位于gcc目录下的/lib/gcc/riscv64-unknown-elf/10.2.0路径内，你可以自行查阅可用的函数和数据类型。
+rvp_intrinsic.h为你提供了函数式调用p扩展指令的各个函数以及相应的数据类型，它位于gcc目录下的/lib/gcc/riscv64-unknown-linux/10.2.0路径内，你可以自行查阅可用的函数和数据类型。
 
 如你所见，__rv_v_uadd16函数被我们调用以使用P扩展中的add16指令来加速我们的计算。
 
