@@ -1,4 +1,4 @@
-# P扩展编程手册 V0.3
+# Polaris编程手册 V0.3
 作者：宗吉祥
 
 本手册基于Ubuntu 20.04环境编写，推荐您使用此版本系统进行环境部署
@@ -135,31 +135,27 @@ READELF   = $(AM_HOME)/gcc/bin/riscv64-unknown-linux-readelf
 SEARCH_DIR :=$(AM_HOME)/gcc/lib/gcc/riscv64-unknown-linux-gnu/10.2.0
 ```
 
-### 4.开启P扩展编译选项
-打开/am/arch/isa/riscv64.mk文件，修改其第二行为：
-```
-COMMON_FLAGS  := -fno-pic -march=rv64imacp -mcmodel=medany  -mno-relax -flax-vector-conversions
-```
-
-### 5.检查Nexus-AM是否安装正确
+### 4.检查Nexus-AM是否安装正确
 在命令行中输入以下命令：
 ```shell
-cd $AM_HOME/apps/pext
+cd $AM_HOME/apps/coremark
 make ARCH=riscv64-nutshell
 cd build
 ls 
 ```
 若得到以下信息，则编译成功
 ```
-pext-riscv64-nutshell.bin  pext-riscv64-nutshell.elf  pext-riscv64-nutshell.txt  riscv64-nutshell
+coremark-riscv64-nutshell.bin  
+coremark-riscv64-nutshell.txt
+coremark-riscv64-nutshell.elf
 ```
-pext-riscv64-nutshell.bin为我们得到的可以在P扩展CPU上运行的二进制文件
+coremark-riscv64-nutshell.bin为我们得到的可以在CPU上运行的二进制文件
 
 在命令行中继续输入以下命令
 ```shell
-$AM_HOME/emu -b 0 -e 0 -i $AM_HOME/apps/pext/build/pext-riscv64-nutshell.bin --no-diff
+$AM_HOME/emu -b 0 -e 0 -i $AM_HOME/apps/coremark/build/coremark-riscv64-nutshell.bin --no-diff
 
-emu为准备好的P扩展cpu模拟器 -i后输入的是给模拟器执行的程序的路径
+emu为准备好的cpu模拟器 -i后输入的是给模拟器执行的程序的路径
 可以使用$AM_HOME/emu -help命令来获取更多参数上的信息
 
 有同学反映执行该步骤会报错：
@@ -170,67 +166,80 @@ sudo apt-get install git curl libsdl2-mixer-2.0-0 libsdl2-image-2.0-0 libsdl2-2.
 ```
 若得到以下输出（时间、路径等信息可能不同），则程序执行无误：
 ```shell
-Emu compiled at Dec 23 2022, 09:06:29
-The image is ./ready-to-run/pext-riscv64-nutshell.bin
+Emu compiled at Feb 22 2024, 03:11:45
+The image is /home/stu/nexus-am/apps/coremark/build/coremark-riscv64-nutshell.bin
 Using simulated 8192MB RAM
 Using simulated 32768B flash
 [warning]no valid flash bin path, use preset flash instead
-src00 1 src10 2 src20 3 res30 4
-src01 5 res11 6 res21 7 res31 8
-res0  6 res1  8 res2 10 res3 12
-P-EXT ADD16 PASS!!!
-Core 0: HIT GOOD TRAP at pc = 0x800000b0
-total guest instructions = 7,132
-instrCnt = 7,132, cycleCnt = 13,348, IPC = 0.534312
-Seed=0 Guest cycle spent: 13,350 (this will be different from cycleCnt if emu loads a snapshot)
-Host time spent: 668ms
+Running CoreMark for 1 iterations
+2K performance run parameters for coremark.
+CoreMark Size    : 666
+Total time (ms)  : 5
+Iterations       : 1
+Compiler version : GCC10.2.0
+seedcrc          : 0xe9f5
+[0]crclist       : 0xe714
+[0]crcmatrix     : 0x1fd7
+[0]crcstate      : 0x8e3a
+[0]crcfinal      : 0xe714
+Finised in 5 ms.
+==================================================
+CoreMark PASS       584 Marks
+                vs. 100000 Marks (i7-7700K @ 4.20GHz)
+Core 0: HIT GOOD TRAP at pc = 0x2cae
+total guest instructions = 384,951
+instrCnt = 384,951, cycleCnt = 548,424, IPC = 0.701922
+Seed=0 Guest cycle spent: 548,426 (this will be different from cycleCnt if emu loads a snapshot)
+Host time spent: 2,053ms
 ======== PerfCnt =========
-               13348 <- Mcycle
-                7132 <- Minstret
-                4980 <- MultiCommit
-                1877 <- MimemStall
+              548424 <- Mcycle
+              384951 <- Minstret
+              337923 <- MultiCommit
+               25450 <- MimemStall
                    0 <- MaluInstr
                    0 <- MbruInstr
                    0 <- MlsuInstr
                    0 <- MmduInstr
                    0 <- McsrInstr
-                1263 <- MloadInstr
-                 241 <- MmmioInstr
+               58061 <- MloadInstr
+                 942 <- MmmioInstr
                    0 <- MicacheHit
                    0 <- MdcacheHit
-                   0 <- MmulInstr
-                 298 <- MifuFlush
-                1239 <- MbpBRight
-                  83 <- MbpBWrong
-                 436 <- MbpJRight
-                  60 <- MbpJWrong
-                  81 <- MbpIRight
-                  47 <- MbpIWrong
-                 383 <- MbpRRight
-                 471 <- MbpRWrong
+                9494 <- MmulInstr
+               20683 <- MifuFlush
+               50021 <- MbpBRight
+               17616 <- MbpBWrong
+                4267 <- MbpJRight
+                2216 <- MbpJWrong
+                 927 <- MbpIRight
+                  20 <- MbpIWrong
+                1648 <- MbpRRight
+                 831 <- MbpRWrong
                    0 <- Ml2cacheHit
-                1405 <- MultiCommit2
-                 315 <- MultiCommit3
-                  39 <- MultiCommit4
+               47028 <- MultiCommit2
+                   0 <- MultiCommit3
+                   0 <- MultiCommit4
                    0 <- CsrOps
                    0 <- MultiCommit5
                    0 <- MultiCommit6
                    0 <- csrnotalone
                    0 <- mounotalone
+              100476 <- LsuWorking
+                 671 <- divtime
                    0 <- MrawStall
                    0 <- MexuBusy
-                3051 <- MloadStall
-                2618 <- MstoreStall
+                   0 <- MloadStall
+                   0 <- MstoreStall
                    0 <- ISUIssue
 ======== PerfCntCSV =========
 
-Mcycle, Minstret, MultiCommit, MimemStall, MaluInstr, MbruInstr, MlsuInstr, MmduInstr, McsrInstr, MloadInstr, MmmioInstr, MicacheHit, MdcacheHit, MmulInstr, MifuFlush, MbpBRight, MbpBWrong, MbpJRight, MbpJWrong, MbpIRight, MbpIWrong, MbpRRight, MbpRWrong, Ml2cacheHit, MultiCommit2, MultiCommit3, MultiCommit4, CsrOps, MultiCommit5, MultiCommit6, csrnotalone, mounotalone, MrawStall, MexuBusy, MloadStall, MstoreStall, ISUIssue, 
+Mcycle, Minstret, MultiCommit, MimemStall, MaluInstr, MbruInstr, MlsuInstr, MmduInstr, McsrInstr, MloadInstr, MmmioInstr, MicacheHit, MdcacheHit, MmulInstr, MifuFlush, MbpBRight, MbpBWrong, MbpJRight, MbpJWrong, MbpIRight, MbpIWrong, MbpRRight, MbpRWrong, Ml2cacheHit, MultiCommit2, MultiCommit3, MultiCommit4, CsrOps, MultiCommit5, MultiCommit6, csrnotalone, mounotalone, LsuWorking, divtime, MrawStall, MexuBusy, MloadStall, MstoreStall, ISUIssue, 
 
 
-               13348,                 7132,                 4980,                 1877,                    0,                    0,                    0,                    0,                    0,                 1263,                  241,                    0,                    0,                    0,                  298,                 1239,                   83,                  436,                   60,                   81,                   47,                  383,                  471,                    0,                 1405,                  315,                   39,                    0,                    0,                    0,                    0,                    0,                    0,                    0,                 3051,                 2618,                    0, 
+              548424,               384951,               337923,                25450,                    0,                    0,                    0,                    0,                    0,                58061,                  942,                    0,                    0,                 9494,                20683,                50021,                17616,                 4267,                 2216,                  927,                   20,                 1648,                  831,                    0,                47028,                    0,                    0,                    0,                    0,                    0,                    0,                    0,               100476,                  671,                    0,                    0,                    0,                    0,                    0, 
 ```
 
-## 三、编写你的P扩展程序并运行它
+## 三、编写你的程序并运行它
 ### 1.进入“path of Nexus-AM”路径下的apps文件夹，并新建一个文件夹作为你的项目路径（以myprj为例）
 ```shell
 cd $AM_HOME/apps
@@ -248,73 +257,16 @@ include $(AM_HOME)/Makefile.app
 ```
 <path of Nexus-AM>/README_old.md
 ```
-如果想要调用P扩展的指令，你可以直接使用P扩展手册中规定的C函数而无须引入头文件（编译器会帮你识别）
 
 例如你可以编写如下的程序：
 ```C
 #include <klib.h>
-#include <rvp_intrinsic.h>
 int main() {
-
-    uint16x4_t a = {1,2,3,4};
-    uint16x4_t b = {5,6,7,8};
-    uint16x4_t c = __rv_v_uadd16(a,b);
-    printf("src00 %d src10 %d src20 %d res30 %d\n",a[0],a[1],a[2],a[3]);
-    printf("src01 %d res11 %d res21 %d res31 %d\n",b[0],b[1],b[2],b[3]);
-    printf("res0  %d res1  %d res2 %d res3 %d\n"  ,c[0],c[1],c[2],c[3]);
-    printf("P-EXT ADD16 PASS!!!\n");
+    printf("Hello Polaris!!!\n");
 }
 ```
 klib.h为Nexus-AM为你准备的标准库之一，内含printf等你熟悉的函数，它们被重新编写为可以在我们的CPU上正常运行的形式。
 
-rvp_intrinsic.h为你提供了函数式调用p扩展指令的各个函数以及相应的数据类型，它位于gcc目录下的/lib/gcc/riscv64-unknown-linux/10.2.0路径内，你可以自行查阅可用的函数和数据类型。
-
-如你所见，__rv_v_uadd16函数被我们调用以使用P扩展中的add16指令来加速我们的计算。
-
-类似__rv_v_uadd16的函数你可以在P扩展手册中每条指令的详情里找到，例如sub8指令的详情中有如下内容：
-```
-Intrinsic functions:
-
-Required:
-
-uintXLEN_t __rv_sub8(uintXLEN_t a, uintXLEN_t b);
-
-Optional (e.g., GCC vector extensions):
-
-RV64:
-uint8x8_t __rv_v_usub8(uint8x8_t a, uint8x8_t b);
-int8x8_t __rv_v_ssub8(int8x8_t a, int8x8_t b);
-```
-P扩展手册的地址为：
-```
-https://github.com/riscv/riscv-p-spec/blob/master/P-ext-proposal.adoc
-```
-你可以使用__rv_sub8函数或者__rv_v_ssub8或者__rv_v_usub8来调用sub8类的指令进行计算(当然，他们对应的数据类型，诸如有符号无符号等，是不一样的)。__rv_v开头的函数支持以vector的形式传参，这在编程时会比手动操作大位宽数更为方便，笔者建议您使用此类函数进行编程。
-
-为了方便我们单独操作vector形式的函数，gcc在rvp_intrinsic.h中为我们定义了如下的众多向量结构
-```C
-typedef signed char int8x4_t __attribute ((vector_size(4)));
-typedef signed char int8x8_t __attribute ((vector_size(8)));
-typedef short int16x2_t __attribute ((vector_size(4)));
-typedef short int16x4_t __attribute__((vector_size (8)));
-typedef int int32x2_t __attribute__((vector_size(8)));
-typedef unsigned char uint8x4_t __attribute__ ((vector_size (4)));
-typedef unsigned char uint8x8_t __attribute__ ((vector_size (8)));
-typedef unsigned short uint16x2_t __attribute__ ((vector_size (4)));
-typedef unsigned short uint16x4_t __attribute__((vector_size (8)));
-typedef unsigned int uint32x2_t __attribute__((vector_size(8)));
-```
-举例来说，uint16x4_t在物理上占据的长度就是64位，其内容为4个16位无符号数，由此以来，你可以使用该结构体类型对需要并行运算的数据进行装载（或者是取出）。
-```C
-printf("res0  %d res1  %d res2 %d res3 %d\n"  ,c[0],c[1],c[2],c[3]);
-```
-目前来说，你可以忘掉诸如“数据类型”或者“向量结构”这样略带陌生的词汇，将它们看作你熟悉的数组去处理（初始化，赋值等等）
-```
-uint16x4_t a = {1,2,3,4};
-a[0] = 114;
-```
-
-P扩展还支持32位的操作数和64位的操作数，支持加、减、乘、移位、乘加、乘减、交叉乘加减等多种并行运算，详情可见上文已给出地址的P扩展官方手册。
 ### 4.编译并运行
 在编写完程序之后，请回到项目的根目录下（如本例中的myprj），执行如下命令：
 ```shell
@@ -328,32 +280,29 @@ myprj-riscv64-nutshell.bin  myprj-riscv64-nutshell.elf  myprj-riscv64-nutshell.t
 
 执行如下命令来运行你编写的程序
 ```shell
-$AM_HOME/emu -b 0 -e 0 -i $AM_HOME/apps/myprj/build/myprj-riscv64-nutshell.bin --no-diff
+$AM_HOME/emu -b 0 -e 0 -i $AM_HOME/apps/pext/build/myprj-riscv64-nutshell.bin --no-diff
 ```
 其中$AM_HOME/emu为CPU模拟器，-i后输入的是myprj-riscv64-nutshell.bin的路径，其余的参数对于软件开发者来说并不重要。
 
 你会得到类似于第二节中第四点的结果，第一部分为emu运行的log，如下：
 ```
 Emu compiled at Dec 23 2022, 09:06:29
-The image is ./ready-to-run/pext-riscv64-nutshell.bin
+The image is ./ready-to-run/myprj-riscv64-nutshell.bin
 Using simulated 8192MB RAM
 Using simulated 32768B flash
 [warning]no valid flash bin path, use preset flash instead
 ```
-第二部分为程序运行的输出，也是软件开发者（诸位读者）所需要关心的内容，例如第二节中编写的程序的输出如下：
+第二部分为程序运行的输出，也是软件开发者（诸位读者）所需要关心的内容：
 ```
-src00 1 src10 2 src20 3 res30 4
-src01 5 res11 6 res21 7 res31 8
-res0  6 res1  8 res2 10 res3 12
-P-EXT ADD16 PASS!!!
+Hello Polaris!!!
 ```
 第三部分为CPU的性能统计数据，如果你有兴趣，可以看一看
 ```
-Core 0: HIT GOOD TRAP at pc = 0x800000b0
-total guest instructions = 7,132
-instrCnt = 7,132, cycleCnt = 13,348, IPC = 0.534312
-Seed=0 Guest cycle spent: 13,350 (this will be different from cycleCnt if emu loads a snapshot)
-Host time spent: 668ms
+Core 0: HIT GOOD TRAP at pc = 0x1006
+total guest instructions = 511
+instrCnt = 511, cycleCnt = 1,818, IPC = 0.281078
+Seed=0 Guest cycle spent: 1,820 (this will be different from cycleCnt if emu loads a snapshot)
+Host time spent: 17ms
 ======== PerfCnt =========
 以下内容此处省略，可以在第二节第四点中查看。
 ```
@@ -380,4 +329,10 @@ v0.3
 得益于编译器的替换，用户现在可以对乘法类型指令进行函数式编程
 得益于编译器的替换，用户现在无需自行定义复杂的结构体
 简化了环境的部署流程
+
+v-mem_base=0x0
+为FPGA：70t修改了nexus-am，包含：
+去除P扩展的编译支持
+将编译的基地址修改为0x0
+相应地修改了手册的部分内容
 ```

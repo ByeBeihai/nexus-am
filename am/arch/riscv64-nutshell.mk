@@ -21,10 +21,12 @@ ASFLAGS += -DMAINARGS=\"$(mainargs)\"
 LDFLAGS += -L $(AM_HOME)/am/src/nutshell/ldscript
 LDFLAGS += -T $(AM_HOME)/am/src/nutshell/isa/riscv/boot/loader64.ld
 SEARCH_DIR :=$(AM_HOME)/gcc/lib/gcc/riscv64-unknown-linux-gnu/10.2.0
+SEARCH_DIR_A :=$(AM_HOME)/gcc/riscv64-unknown-linux-gnu/lib
+SEARCH_DIR_B :=$(AM_HOME)/gcc/sysroot/usr/lib
 
 image:
 	@echo + LD "->" $(BINARY_REL).elf
-	@$(LD) $(LDFLAGS) --gc-sections -o $(BINARY).elf --start-group $(LINK_FILES) --end-group -L$(SEARCH_DIR) -lgcc
+	@$(LD) $(LDFLAGS) --gc-sections -o $(BINARY).elf --start-group $(LINK_FILES) --end-group -L$(SEARCH_DIR)   -lgcc 
 	@$(OBJDUMP) -d $(BINARY).elf > $(BINARY).txt
 	@echo + OBJCOPY "->" $(BINARY_REL).bin
 	@$(OBJCOPY) -S --set-section-flags .bss=alloc,contents -O binary $(BINARY).elf $(BINARY).bin
